@@ -1,4 +1,4 @@
-#include "C:\Users\33695\Documents\git\software-semester2\architecture\TP\Centrale_Alarme\PIC_C_sources\centrale_alarme_0.h"
+#include "C:\Users\33695\Documents\git\pic_c_alarme\Centrale_Alarme\PIC_C_sources\centrale_alarme_0.h"
 // data type
    #define bool int
    #define true 1
@@ -75,6 +75,7 @@ int16 T1=0,T2=0,T3=0; // timers
 #int_TIMER1
 void  TIMER1_isr(void) //each .1 seconds
 {
+   
    set_timer1(3036);
    dix++;
    if(dix==10){sec++;dix=0;T1++;T2--;T3++;}
@@ -88,6 +89,20 @@ void  TIMER1_isr(void) //each .1 seconds
 #int_EXT
 void  EXT_isr(void) 
 {
+
+   flag=!flag;
+   if(flag){
+      enable_interrupts(INT_TIMER1);
+   }
+   else
+   {
+   disable_interrupts(INT_TIMER1);
+   }
+
+
+
+
+
    // column 1
    c1h;c2l;c3l;
    if(l1){printf("1");input=10*input+1;}
@@ -111,6 +126,7 @@ void  EXT_isr(void)
    
    // reset columns
    c1h;c2h;c3h;
+   enable_interrupts(INT_EXT);
 }
 
 /**--------------------------------FUNCTIONS---------------------------------**/  
