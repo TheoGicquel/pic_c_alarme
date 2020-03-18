@@ -1,0 +1,48 @@
+
+ROM used: 554 (2%)
+          554 (2%) including unused fragments
+
+          1 Average locations per line
+          8 Average locations per statement
+
+RAM used: 35 (2%) at main() level
+          48 (3%) worst case
+
+Stack used: 2 worst case (out of 31 total available)
+
+Lines Stmts  %   Files
+----- ----- ---  -----
+  134    73 100  main.c
+   27     0   0  main.h
+  354     0   0  C:\Program Files (x86)\PICC\devices\18F452.h
+----- -----
+  515    73 Total
+
+Page ROM  %  RAM   Vol Diff  Functions:
+---- --- --- ---   --- ----  ----------
+0    134  12   0   163  3.9  TIMER1_isr
+0    124  11  13             @DIV3232
+0      6   1   0     5  1.0  EXT_isr
+0    132  12   0   349  2.8  MAIN
+
+Program metrics:
+    Functions               3
+    Statements              73
+    Comments                88
+    Volume (V)              633
+    Difficilty (D)          7.7
+    Effort to implement (E) 4854
+    Time to implement (T)   4 minutes
+    Est Delivered Bugs (B)  0
+    Cyclomatic Complexity   2
+    Maintainability (MI)    134
+
+ Segment     Used  Free
+-----------  ----  ----
+00000-00002     4  0  
+00004-00006     0  4  
+00008-000A0   154  0  
+000A2-07FFE   396  32210  
+
+
+

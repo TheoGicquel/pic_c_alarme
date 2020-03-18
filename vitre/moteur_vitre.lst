@@ -1,0 +1,204 @@
+CCS PCH C Compiler, Version 4.104, 5967               28-janv.-20 17:25
+
+               Filename: C:\Users\33695\Documents\git\software-semester2\architecture\TP\moteur_vitre.lst
+
+               ROM used: 192 bytes (1%)
+                         Largest free fragment is 32576
+               RAM used: 4 (0%) at main() level
+                         4 (0%) worst case
+               Stack:    0 locations
+
+*
+0000:  GOTO   0004
+.................... #include "C:\Users\33695\Documents\git\software-semester2\architecture\TP\moteur_vitre.h" 
+.................... #include <18F452.h> 
+.................... //////// Standard Header file for the PIC18F452 device //////////////// 
+.................... #device PIC18F452 
+.................... #list 
+....................  
+.................... #device adc=8 
+....................  
+.................... #FUSES NOWDT                 	//No Watch Dog Timer 
+.................... #FUSES WDT128                	//Watch Dog Timer uses 1:128 Postscale 
+.................... #FUSES HS                    	//High speed Osc (> 4mhz for PCM/PCH) (>10mhz for PCD) 
+.................... #FUSES NOPROTECT             	//Code not protected from reading 
+.................... #FUSES NOOSCSEN              	//Oscillator switching is disabled, main oscillator is source 
+.................... #FUSES NOBROWNOUT            	//No brownout reset 
+.................... #FUSES BORV20                	//Brownout reset at 2.0V 
+.................... #FUSES NOPUT                 	//No Power Up Timer 
+.................... #FUSES STVREN                	//Stack full/underflow will cause reset 
+.................... #FUSES NODEBUG               	//No Debug mode for ICD 
+.................... #FUSES NOLVP                 	//No low voltage prgming, B3(PIC16) or B5(PIC18) used for I/O 
+.................... #FUSES NOWRT                 	//Program memory not write protected 
+.................... #FUSES NOWRTD                	//Data EEPROM not write protected 
+.................... #FUSES NOWRTB                	//Boot block not write protected 
+.................... #FUSES NOWRTC                	//configuration not registers write protected 
+.................... #FUSES NOCPD                 	//No EE protection 
+.................... #FUSES NOCPB                 	//No Boot Block code protection 
+.................... #FUSES NOEBTR                	//Memory not protected from table reads 
+.................... #FUSES NOEBTRB               	//Boot block not protected from table reads 
+....................  
+.................... #use delay(clock=20000000) 
+.................... #use rs232(baud=9600,parity=N,xmit=PIN_C6,rcv=PIN_C7,bits=8) 
+....................  
+....................  
+....................  
+.................... #define descend INPUT(PIN_B2) 
+.................... #define remonte INPUT(PIN_B1) 
+....................  
+.................... #define remontecomp INPUT(PIN_B0) 
+.................... #define descendcomp INPUT(PIN_B3) 
+....................  
+.................... #define fch INPUT(PIN_B6) 
+.................... #define fcb INPUT(PIN_B7) 
+....................  
+....................  
+.................... #define m_desc OUTPUT_D(0b11) 
+.................... #define m_mont OUTPUT_D(0b01) 
+.................... #define m_stop OUTPUT_D(0b00) 
+....................  
+.................... void main() 
+.................... { 
+0004:  CLRF   FF8
+0006:  BCF    FD0.7
+0008:  CLRF   FEA
+000A:  CLRF   FE9
+000C:  MOVLW  81
+000E:  MOVWF  FAF
+0010:  MOVLW  A6
+0012:  MOVWF  FAC
+0014:  MOVLW  90
+0016:  MOVWF  FAB
+0018:  BSF    FC1.0
+001A:  BSF    FC1.1
+001C:  BSF    FC1.2
+001E:  BCF    FC1.3
+....................  
+....................    setup_adc_ports(NO_ANALOGS); 
+0020:  BSF    FC1.0
+0022:  BSF    FC1.1
+0024:  BSF    FC1.2
+0026:  BCF    FC1.3
+....................    setup_adc(ADC_CLOCK_DIV_2); 
+0028:  BCF    FC1.6
+002A:  BCF    FC2.6
+002C:  BCF    FC2.7
+002E:  BCF    FC1.7
+0030:  BSF    FC2.0
+....................    setup_psp(PSP_DISABLED); 
+0032:  BCF    F96.4
+....................    setup_spi(SPI_SS_DISABLED); 
+0034:  BCF    FC6.5
+0036:  BCF    F94.5
+0038:  BSF    F94.4
+003A:  BCF    F94.3
+003C:  MOVLW  01
+003E:  MOVWF  FC6
+0040:  MOVLW  00
+0042:  MOVWF  FC7
+....................    setup_wdt(WDT_OFF); 
+0044:  BCF    FD1.0
+....................    setup_timer_0(RTCC_INTERNAL); 
+0046:  MOVLW  80
+0048:  MOVWF  FD5
+....................    setup_timer_1(T1_DISABLED); 
+004A:  CLRF   FCD
+....................    setup_timer_2(T2_DISABLED,0,1); 
+004C:  MOVLW  00
+004E:  MOVWF  FCA
+0050:  MOVLW  00
+0052:  MOVWF  FCB
+.................... //Setup_Oscillator parameter not selected from Intr Oscillator Config tab 
+....................    // TODO: USER CODE!! 
+....................    while(true){ 
+....................       if(remonte && !fch){ 
+0054:  BSF    F93.1
+0056:  BTFSS  F81.1
+0058:  BRA    0066
+005A:  BSF    F93.6
+005C:  BTFSC  F81.6
+005E:  BRA    0066
+....................          m_mont; 
+0060:  CLRF   F95
+0062:  MOVLW  01
+0064:  MOVWF  F8C
+....................       } 
+....................  
+....................       if(!remonte && !descend){ 
+0066:  BSF    F93.1
+0068:  BTFSC  F81.1
+006A:  BRA    0076
+006C:  BSF    F93.2
+006E:  BTFSC  F81.2
+0070:  BRA    0076
+....................          m_stop; 
+0072:  CLRF   F95
+0074:  CLRF   F8C
+....................       } 
+....................  
+....................       if(descend && !fcb){ 
+0076:  BSF    F93.2
+0078:  BTFSS  F81.2
+007A:  BRA    0088
+007C:  BSF    F93.7
+007E:  BTFSC  F81.7
+0080:  BRA    0088
+....................          m_desc; 
+0082:  CLRF   F95
+0084:  MOVLW  03
+0086:  MOVWF  F8C
+....................       } 
+....................  
+....................       if(remontecomp && !fch){ 
+0088:  BSF    F93.0
+008A:  BTFSS  F81.0
+008C:  BRA    00A2
+008E:  BSF    F93.6
+0090:  BTFSC  F81.6
+0092:  BRA    00A2
+....................          while(!fch) 
+....................          { 
+0094:  BSF    F93.6
+0096:  BTFSC  F81.6
+0098:  BRA    00A2
+....................             m_mont; 
+009A:  CLRF   F95
+009C:  MOVLW  01
+009E:  MOVWF  F8C
+....................          } 
+00A0:  BRA    0094
+....................       } 
+....................  
+....................       if(descendcomp && !fcb){ 
+00A2:  BSF    F93.3
+00A4:  BTFSS  F81.3
+00A6:  BRA    00BC
+00A8:  BSF    F93.7
+00AA:  BTFSC  F81.7
+00AC:  BRA    00BC
+....................          while(!fcb) 
+....................          { 
+00AE:  BSF    F93.7
+00B0:  BTFSC  F81.7
+00B2:  BRA    00BC
+....................             m_desc; 
+00B4:  CLRF   F95
+00B6:  MOVLW  03
+00B8:  MOVWF  F8C
+....................          } 
+00BA:  BRA    00AE
+....................       } 
+....................  
+....................    } 
+00BC:  BRA    0054
+.................... } 
+00BE:  SLEEP 
+
+Configuration Fuses:
+   Word  1: 2200   HS NOOSCSEN
+   Word  2: 0E0D   NOBROWNOUT WDT128 NOWDT BORV20 NOPUT
+   Word  3: 0100   CCP2C1
+   Word  4: 0081   STVREN NODEBUG NOLVP
+   Word  5: C00F   NOPROTECT NOCPD NOCPB
+   Word  6: E00F   NOWRT NOWRTD NOWRTB NOWRTC
+   Word  7: 400F   NOEBTR NOEBTRB

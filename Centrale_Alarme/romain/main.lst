@@ -1,0 +1,355 @@
+CCS PCH C Compiler, Version 4.104, 5967               10-Mar-20 18:44
+
+               Filename: D:\Cours\M2101\TP\m2101\TP Alarme\PIC C\main.lst
+
+               ROM used: 554 bytes (2%)
+                         Largest free fragment is 32210
+               RAM used: 35 (2%) at main() level
+                         48 (3%) worst case
+               Stack:    2 worst case (0 in main + 2 for interrupts)
+
+*
+0000:  GOTO   01AA
+*
+0008:  MOVWF  04
+000A:  MOVFF  FD8,05
+000E:  MOVFF  FE0,06
+0012:  MOVLB  0
+0014:  MOVFF  FE9,0C
+0018:  MOVFF  FEA,07
+001C:  MOVFF  FE1,08
+0020:  MOVFF  FE2,09
+0024:  MOVFF  FD9,0A
+0028:  MOVFF  FDA,0B
+002C:  MOVFF  FF3,12
+0030:  MOVFF  FF4,13
+0034:  MOVFF  FFA,14
+0038:  MOVFF  00,0E
+003C:  MOVFF  01,0F
+0040:  MOVFF  02,10
+0044:  MOVFF  03,11
+0048:  BTFSS  F9D.0
+004A:  GOTO   0054
+004E:  BTFSC  F9E.0
+0050:  GOTO   011E
+0054:  BTFSS  FF2.4
+0056:  GOTO   0060
+005A:  BTFSC  FF2.1
+005C:  GOTO   01A4
+0060:  MOVFF  0E,00
+0064:  MOVFF  0F,01
+0068:  MOVFF  10,02
+006C:  MOVFF  11,03
+0070:  MOVFF  0C,FE9
+0074:  MOVFF  07,FEA
+0078:  BSF    07.7
+007A:  MOVFF  08,FE1
+007E:  MOVFF  09,FE2
+0082:  MOVFF  0A,FD9
+0086:  MOVFF  0B,FDA
+008A:  MOVFF  12,FF3
+008E:  MOVFF  13,FF4
+0092:  MOVFF  14,FFA
+0096:  MOVF   04,W
+0098:  MOVFF  06,FE0
+009C:  MOVFF  05,FD8
+00A0:  RETFIE 0
+.................... #include "D:\Cours\M2101\TP\m2101\TP Alarme\PIC C\main.h" 
+.................... #include <18F452.h> 
+.................... //////// Standard Header file for the PIC18F452 device //////////////// 
+.................... #device PIC18F452 
+.................... #list 
+....................  
+.................... #device adc=8 
+....................  
+.................... #FUSES NOWDT                 	//No Watch Dog Timer 
+.................... #FUSES WDT128                	//Watch Dog Timer uses 1:128 Postscale 
+.................... #FUSES HS                    	//High speed Osc (> 4mhz for PCM/PCH) (>10mhz for PCD) 
+.................... #FUSES NOPROTECT             	//Code not protected from reading 
+.................... #FUSES NOOSCSEN              	//Oscillator switching is disabled, main oscillator is source 
+.................... #FUSES NOBROWNOUT            	//No brownout reset 
+.................... #FUSES BORV20                	//Brownout reset at 2.0V 
+.................... #FUSES NOPUT                 	//No Power Up Timer 
+.................... #FUSES STVREN                	//Stack full/underflow will cause reset 
+.................... #FUSES NODEBUG               	//No Debug mode for ICD 
+.................... #FUSES NOLVP                 	//No low voltage prgming, B3(PIC16) or B5(PIC18) used for I/O 
+.................... #FUSES NOWRT                 	//Program memory not write protected 
+.................... #FUSES NOWRTD                	//Data EEPROM not write protected 
+.................... #FUSES NOWRTB                	//Boot block not write protected 
+.................... #FUSES NOWRTC                	//configuration not registers write protected 
+.................... #FUSES NOCPD                 	//No EE protection 
+.................... #FUSES NOCPB                 	//No Boot Block code protection 
+.................... #FUSES NOEBTR                	//Memory not protected from table reads 
+.................... #FUSES NOEBTRB               	//Boot block not protected from table reads 
+....................  
+.................... #use delay(clock=20000000) 
+.................... #use rs232(baud=9600,parity=N,xmit=PIN_C6,rcv=PIN_C7,bits=8) 
+....................  
+....................  
+.................... #define b1 input(PIN_B1) 
+.................... #define b2 input(PIN_B2) 
+.................... #define b3 input(PIN_B3) 
+.................... #define b4 input(PIN_B4) 
+.................... #define b5 input(PIN_B5) 
+.................... #define b6 input(PIN_B6) 
+.................... #define buzzer output_a 
+.................... #define masterArmSwitch output_c 
+.................... #define ledb1 output_c(0b01) 
+.................... #define ledb2 output_c(0b001) 
+.................... #define ledb3 output_c(0b000001) 
+.................... #define ledb4 output_c(0b00001) 
+.................... #define ledb5 output_e(0b1) 
+.................... #define ledb6 output_e(0b01) 
+.................... #define AlarmOn Output_high(PIN_B7) 
+.................... #define AlarmOff Output_low(PIN_B7) 
+....................  
+.................... int32 dix = 0, timer = 0, timerStart = 0; 
+.................... int masterArm = 1; 
+....................  
+.................... #int_TIMER1 
+.................... void  TIMER1_isr(void)  
+.................... { 
+....................    if(timerStart == 1){ 
+011E:  DECFSZ 1E,W
+0120:  BRA    019E
+0122:  MOVF   1F,F
+0124:  BNZ   019E
+0126:  MOVF   20,F
+0128:  BNZ   019E
+012A:  MOVF   21,F
+012C:  BNZ   019E
+....................       set_timer1(3036); 
+012E:  MOVLW  0B
+0130:  MOVWF  FCF
+0132:  MOVLW  DC
+0134:  MOVWF  FCE
+....................       dix++; 
+0136:  MOVLW  01
+0138:  ADDWF  16,F
+013A:  BTFSC  FD8.0
+013C:  INCF   17,F
+013E:  BTFSC  FD8.2
+0140:  INCF   18,F
+0142:  BTFSC  FD8.2
+0144:  INCF   19,F
+....................       if(dix>=10){ 
+0146:  MOVF   19,F
+0148:  BNZ   0158
+014A:  MOVF   18,F
+014C:  BNZ   0158
+014E:  MOVF   17,F
+0150:  BNZ   0158
+0152:  MOVF   16,W
+0154:  SUBLW  09
+0156:  BC    0170
+....................          dix=0; 
+0158:  CLRF   19
+015A:  CLRF   18
+015C:  CLRF   17
+015E:  CLRF   16
+....................          timer++; 
+0160:  MOVLW  01
+0162:  ADDWF  1A,F
+0164:  BTFSC  FD8.0
+0166:  INCF   1B,F
+0168:  BTFSC  FD8.2
+016A:  INCF   1C,F
+016C:  BTFSC  FD8.2
+016E:  INCF   1D,F
+....................       } 
+....................       timer=timer%500;  
+0170:  MOVFF  1D,26
+0174:  MOVFF  1C,25
+0178:  MOVFF  1B,24
+017C:  MOVFF  1A,23
+0180:  CLRF   2A
+0182:  CLRF   29
+0184:  MOVLW  01
+0186:  MOVWF  28
+0188:  MOVLW  F4
+018A:  MOVWF  27
+018C:  BRA    00A2
+018E:  MOVFF  FEF,1A
+0192:  MOVFF  FEC,1B
+0196:  MOVFF  FEC,1C
+019A:  MOVFF  FEC,1D
+....................    } 
+.................... } 
+....................  
+019E:  BCF    F9E.0
+01A0:  GOTO   0060
+.................... #int_EXT 
+.................... void  EXT_isr(void)  
+.................... { 
+....................  
+.................... } 
+....................  
+01A4:  BCF    FF2.1
+01A6:  GOTO   0060
+.................... void alarm(){ 
+....................    timerStart = 1; 
+....................    while(timer<180){ 
+....................       AlarmON; 
+....................    } 
+....................    AlarmOff; 
+....................    timerStart=0; 
+....................    timer = 0; 
+.................... } 
+....................  
+.................... int instant(){ 
+....................    int bool = 0; 
+....................    if(!b1 || !b2 || !b3 || !b4){ 
+....................       bool = 1; 
+....................    } 
+....................     
+....................    if(b1){ 
+....................       ledb1; 
+....................    }else if(b2){ 
+....................       ledb2; 
+....................    }else if(b3){ 
+....................       ledb3; 
+....................    }else if(b4){ 
+....................       ledb4; 
+....................    } 
+....................     
+....................    return bool; 
+.................... } 
+....................  
+.................... int retarded(){ 
+....................    int bool = 0; 
+....................    if(!b5 || !b6){ 
+....................       bool = 1; 
+....................    } 
+....................     
+....................    if(b5){ 
+....................       ledb5; 
+....................    }else if(b6){ 
+....................       ledb6; 
+....................    } 
+....................    return bool; 
+.................... } 
+....................  
+.................... void retardedLaunch(){ 
+....................    timerStart = 1; 
+....................    while(timer<20){ 
+....................       buzzer(1); 
+....................    } 
+....................    buzzer(0); 
+....................    timerStart = 0; 
+....................    timer = 0; 
+....................    alarm(); 
+.................... } 
+....................  
+.................... void check(){ 
+....................    if(retarded() == 1 && instant() == 0){ 
+....................       masterArm = 0; 
+....................       retardedLaunch(); 
+....................    }else if(instant() == 1){ 
+....................       masterArm = 0; 
+....................       alarm(); 
+....................    } 
+....................     
+.................... } 
+....................  
+....................  
+.................... void main() 
+.................... { 
+01AA:  CLRF   FF8
+01AC:  BCF    FD0.7
+01AE:  BSF    07.7
+01B0:  CLRF   FEA
+01B2:  CLRF   FE9
+01B4:  MOVLW  81
+01B6:  MOVWF  FAF
+01B8:  MOVLW  A6
+01BA:  MOVWF  FAC
+01BC:  MOVLW  90
+01BE:  MOVWF  FAB
+01C0:  CLRF   19
+01C2:  CLRF   18
+01C4:  CLRF   17
+01C6:  CLRF   16
+01C8:  CLRF   1D
+01CA:  CLRF   1C
+01CC:  CLRF   1B
+01CE:  CLRF   1A
+01D0:  CLRF   21
+01D2:  CLRF   20
+01D4:  CLRF   1F
+01D6:  CLRF   1E
+01D8:  MOVLW  01
+01DA:  MOVWF  22
+01DC:  BSF    FC1.0
+01DE:  BSF    FC1.1
+01E0:  BSF    FC1.2
+01E2:  BCF    FC1.3
+....................  
+....................    setup_adc_ports(NO_ANALOGS); 
+01E4:  BSF    FC1.0
+01E6:  BSF    FC1.1
+01E8:  BSF    FC1.2
+01EA:  BCF    FC1.3
+....................    setup_adc(ADC_CLOCK_DIV_2); 
+01EC:  BCF    FC1.6
+01EE:  BCF    FC2.6
+01F0:  BCF    FC2.7
+01F2:  BCF    FC1.7
+01F4:  BSF    FC2.0
+....................    setup_psp(PSP_DISABLED); 
+01F6:  BCF    F96.4
+....................    setup_spi(SPI_SS_DISABLED); 
+01F8:  BCF    FC6.5
+01FA:  BCF    F94.5
+01FC:  BSF    F94.4
+01FE:  BCF    F94.3
+0200:  MOVLW  01
+0202:  MOVWF  FC6
+0204:  MOVLW  00
+0206:  MOVWF  FC7
+....................    setup_wdt(WDT_OFF); 
+0208:  BCF    FD1.0
+....................    setup_timer_0(RTCC_INTERNAL); 
+020A:  MOVLW  80
+020C:  MOVWF  FD5
+....................    setup_timer_1(T1_INTERNAL|T1_DIV_BY_8); 
+020E:  MOVLW  B5
+0210:  MOVWF  FCD
+....................    setup_timer_2(T2_DISABLED,0,1); 
+0212:  MOVLW  00
+0214:  MOVWF  FCA
+0216:  MOVLW  00
+0218:  MOVWF  FCB
+....................    setup_timer_3(T3_DISABLED|T3_DIV_BY_1); 
+021A:  CLRF   FB1
+....................    enable_interrupts(INT_TIMER1); 
+021C:  BSF    F9D.0
+....................    enable_interrupts(INT_EXT); 
+021E:  BSF    FF2.4
+....................    enable_interrupts(GLOBAL); 
+0220:  MOVLW  C0
+0222:  IORWF  FF2,F
+.................... //Setup_Oscillator parameter not selected from Intr Oscillator Config tab 
+....................  
+....................    // TODO: USER CODE!! 
+....................    output_c(0b10000000); 
+0224:  CLRF   F94
+0226:  MOVLW  80
+0228:  MOVWF  F8B
+....................    while(true){ 
+....................       /*if(masterArm == 1){ 
+....................          check(); 
+....................          masterArmSwitch(masterArm); 
+....................       }*/ 
+....................    } 
+022A:  BRA    022A
+.................... } 
+022C:  SLEEP 
+
+Configuration Fuses:
+   Word  1: 2200   HS NOOSCSEN
+   Word  2: 0E0D   NOBROWNOUT WDT128 NOWDT BORV20 NOPUT
+   Word  3: 0100   CCP2C1
+   Word  4: 0081   STVREN NODEBUG NOLVP
+   Word  5: C00F   NOPROTECT NOCPD NOCPB
+   Word  6: E00F   NOWRT NOWRTD NOWRTB NOWRTC
+   Word  7: 400F   NOEBTR NOEBTRB

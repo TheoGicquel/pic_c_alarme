@@ -1,0 +1,43 @@
+
+ROM used: 192 (1%)
+          192 (1%) including unused fragments
+
+          0 Average locations per line
+          7 Average locations per statement
+
+RAM used: 4 (0%) at main() level
+          4 (0%) worst case
+
+Stack used: 0 worst case (out of 31 total available)
+
+Lines Stmts  %   Files
+----- ----- ---  -----
+   59    29 100  moteur_vitre.c
+   27     0   0  moteur_vitre.h
+  354     0   0  ..\..\..\..\..\..\..\Program Files (x86)\PICC\devices\18F452.h
+----- -----
+  440    29 Total
+
+Page ROM  %  RAM   Vol Diff  Functions:
+---- --- --- ---   --- ----  ----------
+0    188  49   0   789  3.9  main
+
+Program metrics:
+    Functions               1
+    Statements              29
+    Comments                84
+    Volume (V)              789
+    Difficilty (D)          3.9
+    Effort to implement (E) 3041
+    Time to implement (T)   3 minutes
+    Est Delivered Bugs (B)  0
+    Cyclomatic Complexity   5
+    Maintainability (MI)    131
+
+ Segment     Used  Free
+-----------  ----  ----
+00000-00002     4  0  
+00004-07FFE   188  32576  
+
+
+

@@ -1,0 +1,597 @@
+CCS PCH C Compiler, Version 4.104, 5967               11-févr.-20 18:53
+
+               Filename: C:\Users\33695\Documents\git\software-semester2\architecture\TP\digicode\code_c.lst
+
+               ROM used: 1582 bytes (5%)
+                         Largest free fragment is 31182
+               RAM used: 26 (2%) at main() level
+                         51 (3%) worst case
+               Stack:    3 worst case (0 in main + 3 for interrupts)
+
+*
+0000:  GOTO   05C8
+*
+0008:  MOVWF  04
+000A:  MOVFF  FD8,05
+000E:  MOVFF  FE0,06
+0012:  MOVLB  0
+0014:  MOVFF  FE9,0C
+0018:  MOVFF  FEA,07
+001C:  MOVFF  FE1,08
+0020:  MOVFF  FE2,09
+0024:  MOVFF  FD9,0A
+0028:  MOVFF  FDA,0B
+002C:  MOVFF  FF3,12
+0030:  MOVFF  FF4,13
+0034:  MOVFF  FFA,14
+0038:  MOVFF  00,0E
+003C:  MOVFF  01,0F
+0040:  MOVFF  02,10
+0044:  MOVFF  03,11
+0048:  BTFSS  FF2.4
+004A:  GOTO   0054
+004E:  BTFSC  FF2.1
+0050:  GOTO   029C
+0054:  MOVFF  0E,00
+0058:  MOVFF  0F,01
+005C:  MOVFF  10,02
+0060:  MOVFF  11,03
+0064:  MOVFF  0C,FE9
+0068:  MOVFF  07,FEA
+006C:  BSF    07.7
+006E:  MOVFF  08,FE1
+0072:  MOVFF  09,FE2
+0076:  MOVFF  0A,FD9
+007A:  MOVFF  0B,FDA
+007E:  MOVFF  12,FF3
+0082:  MOVFF  13,FF4
+0086:  MOVFF  14,FFA
+008A:  MOVF   04,W
+008C:  MOVFF  06,FE0
+0090:  MOVFF  05,FD8
+0094:  RETFIE 0
+.................... #include "C:\Users\33695\Documents\git\software-semester2\architecture\TP\digicode\code_c.h" 
+.................... #include <18F452.h> 
+.................... //////// Standard Header file for the PIC18F452 device //////////////// 
+.................... #device PIC18F452 
+.................... #list 
+....................  
+.................... #device adc=8 
+....................  
+.................... #FUSES NOWDT                 	//No Watch Dog Timer 
+.................... #FUSES WDT128                	//Watch Dog Timer uses 1:128 Postscale 
+.................... #FUSES HS                    	//High speed Osc (> 4mhz for PCM/PCH) (>10mhz for PCD) 
+.................... #FUSES NOPROTECT             	//Code not protected from reading 
+.................... #FUSES NOOSCSEN              	//Oscillator switching is disabled, main oscillator is source 
+.................... #FUSES NOBROWNOUT            	//No brownout reset 
+.................... #FUSES BORV20                	//Brownout reset at 2.0V 
+.................... #FUSES NOPUT                 	//No Power Up Timer 
+.................... #FUSES STVREN                	//Stack full/underflow will cause reset 
+.................... #FUSES NODEBUG               	//No Debug mode for ICD 
+.................... #FUSES NOLVP                 	//No low voltage prgming, B3(PIC16) or B5(PIC18) used for I/O 
+.................... #FUSES NOWRT                 	//Program memory not write protected 
+.................... #FUSES NOWRTD                	//Data EEPROM not write protected 
+.................... #FUSES NOWRTB                	//Boot block not write protected 
+.................... #FUSES NOWRTC                	//configuration not registers write protected 
+.................... #FUSES NOCPD                 	//No EE protection 
+.................... #FUSES NOCPB                 	//No Boot Block code protection 
+.................... #FUSES NOEBTR                	//Memory not protected from table reads 
+.................... #FUSES NOEBTRB               	//Boot block not protected from table reads 
+....................  
+.................... #use delay(clock=20000000) 
+.................... #use rs232(baud=9600,parity=N,xmit=PIN_C6,rcv=PIN_C7,bits=8) 
+....................  
+....................  
+....................  
+....................  
+.................... #define ligne1 input(pin_B4) 
+.................... #define ligne2 input(pin_B5) 
+.................... #define ligne3 input(pin_B6) 
+.................... #define ligne4 input(pin_B7) 
+....................  
+.................... #define colgauche output_d(1) 
+.................... #define colmilieu output_d(2) 
+.................... #define coldroite output_d(4) 
+....................  
+.................... int32 n=0; 
+....................  
+.................... void open(){ 
+....................   printf("\n\r CODE VALIDE \n\r"); 
+*
+0280:  MOVLW  96
+0282:  MOVWF  FF6
+0284:  MOVLW  00
+0286:  MOVWF  FF7
+0288:  RCALL  025E
+.................... } 
+028A:  GOTO   05A2 (RETURN)
+....................  
+.................... void close(){ 
+....................  
+.................... } 
+....................  
+.................... void incorrect(){ 
+....................   printf("\n\r CODE NON VALIDE  \n\r"); 
+028E:  MOVLW  A8
+0290:  MOVWF  FF6
+0292:  MOVLW  00
+0294:  MOVWF  FF7
+0296:  RCALL  025E
+.................... } 
+0298:  GOTO   05A6 (RETURN)
+....................  
+....................  
+....................  
+....................  
+....................  
+....................  
+.................... #int_EXT 
+.................... void  EXT_isr(void)  
+.................... { disable_interrupts(INT_EXT); 
+029C:  BCF    FF2.4
+....................  
+.................... colgauche; // active colonne de gauche 
+029E:  CLRF   F95
+02A0:  MOVLW  01
+02A2:  MOVWF  F8C
+.................... if(ligne1){printf("1");n=10*n+1;} 
+02A4:  BSF    F93.4
+02A6:  BTFSS  F81.4
+02A8:  BRA    02E6
+02AA:  MOVLW  31
+02AC:  BTFSS  F9E.4
+02AE:  BRA    02AC
+02B0:  MOVWF  FAD
+02B2:  CLRF   1D
+02B4:  CLRF   1C
+02B6:  CLRF   1B
+02B8:  MOVLW  0A
+02BA:  MOVWF  1A
+02BC:  MOVFF  19,21
+02C0:  MOVFF  18,20
+02C4:  MOVFF  17,1F
+02C8:  MOVFF  16,1E
+02CC:  RCALL  00C0
+02CE:  MOVLW  01
+02D0:  ADDWF  00,W
+02D2:  MOVWF  16
+02D4:  MOVLW  00
+02D6:  ADDWFC 01,W
+02D8:  MOVWF  17
+02DA:  MOVLW  00
+02DC:  ADDWFC 02,W
+02DE:  MOVWF  18
+02E0:  MOVLW  00
+02E2:  ADDWFC 03,W
+02E4:  MOVWF  19
+.................... if(ligne2){printf("4");n=10*n+4;} 
+02E6:  BSF    F93.5
+02E8:  BTFSS  F81.5
+02EA:  BRA    0328
+02EC:  MOVLW  34
+02EE:  BTFSS  F9E.4
+02F0:  BRA    02EE
+02F2:  MOVWF  FAD
+02F4:  CLRF   1D
+02F6:  CLRF   1C
+02F8:  CLRF   1B
+02FA:  MOVLW  0A
+02FC:  MOVWF  1A
+02FE:  MOVFF  19,21
+0302:  MOVFF  18,20
+0306:  MOVFF  17,1F
+030A:  MOVFF  16,1E
+030E:  RCALL  00C0
+0310:  MOVLW  04
+0312:  ADDWF  00,W
+0314:  MOVWF  16
+0316:  MOVLW  00
+0318:  ADDWFC 01,W
+031A:  MOVWF  17
+031C:  MOVLW  00
+031E:  ADDWFC 02,W
+0320:  MOVWF  18
+0322:  MOVLW  00
+0324:  ADDWFC 03,W
+0326:  MOVWF  19
+.................... if(ligne3){printf("7");n=10*n+7;} 
+0328:  BSF    F93.6
+032A:  BTFSS  F81.6
+032C:  BRA    036A
+032E:  MOVLW  37
+0330:  BTFSS  F9E.4
+0332:  BRA    0330
+0334:  MOVWF  FAD
+0336:  CLRF   1D
+0338:  CLRF   1C
+033A:  CLRF   1B
+033C:  MOVLW  0A
+033E:  MOVWF  1A
+0340:  MOVFF  19,21
+0344:  MOVFF  18,20
+0348:  MOVFF  17,1F
+034C:  MOVFF  16,1E
+0350:  RCALL  00C0
+0352:  MOVLW  07
+0354:  ADDWF  00,W
+0356:  MOVWF  16
+0358:  MOVLW  00
+035A:  ADDWFC 01,W
+035C:  MOVWF  17
+035E:  MOVLW  00
+0360:  ADDWFC 02,W
+0362:  MOVWF  18
+0364:  MOVLW  00
+0366:  ADDWFC 03,W
+0368:  MOVWF  19
+.................... if(ligne4){printf("*");} 
+036A:  BSF    F93.7
+036C:  BTFSS  F81.7
+036E:  BRA    0378
+0370:  MOVLW  2A
+0372:  BTFSS  F9E.4
+0374:  BRA    0372
+0376:  MOVWF  FAD
+....................  
+.................... colmilieu; 
+0378:  CLRF   F95
+037A:  MOVLW  02
+037C:  MOVWF  F8C
+.................... if(ligne1){printf("2");n=10*n+2;} 
+037E:  BSF    F93.4
+0380:  BTFSS  F81.4
+0382:  BRA    03C0
+0384:  MOVLW  32
+0386:  BTFSS  F9E.4
+0388:  BRA    0386
+038A:  MOVWF  FAD
+038C:  CLRF   1D
+038E:  CLRF   1C
+0390:  CLRF   1B
+0392:  MOVLW  0A
+0394:  MOVWF  1A
+0396:  MOVFF  19,21
+039A:  MOVFF  18,20
+039E:  MOVFF  17,1F
+03A2:  MOVFF  16,1E
+03A6:  RCALL  00C0
+03A8:  MOVLW  02
+03AA:  ADDWF  00,W
+03AC:  MOVWF  16
+03AE:  MOVLW  00
+03B0:  ADDWFC 01,W
+03B2:  MOVWF  17
+03B4:  MOVLW  00
+03B6:  ADDWFC 02,W
+03B8:  MOVWF  18
+03BA:  MOVLW  00
+03BC:  ADDWFC 03,W
+03BE:  MOVWF  19
+.................... if(ligne2){printf("5");n=10*n+5;} 
+03C0:  BSF    F93.5
+03C2:  BTFSS  F81.5
+03C4:  BRA    0402
+03C6:  MOVLW  35
+03C8:  BTFSS  F9E.4
+03CA:  BRA    03C8
+03CC:  MOVWF  FAD
+03CE:  CLRF   1D
+03D0:  CLRF   1C
+03D2:  CLRF   1B
+03D4:  MOVLW  0A
+03D6:  MOVWF  1A
+03D8:  MOVFF  19,21
+03DC:  MOVFF  18,20
+03E0:  MOVFF  17,1F
+03E4:  MOVFF  16,1E
+03E8:  RCALL  00C0
+03EA:  MOVLW  05
+03EC:  ADDWF  00,W
+03EE:  MOVWF  16
+03F0:  MOVLW  00
+03F2:  ADDWFC 01,W
+03F4:  MOVWF  17
+03F6:  MOVLW  00
+03F8:  ADDWFC 02,W
+03FA:  MOVWF  18
+03FC:  MOVLW  00
+03FE:  ADDWFC 03,W
+0400:  MOVWF  19
+.................... if(ligne3){printf("8");n=10*n+8;} 
+0402:  BSF    F93.6
+0404:  BTFSS  F81.6
+0406:  BRA    0444
+0408:  MOVLW  38
+040A:  BTFSS  F9E.4
+040C:  BRA    040A
+040E:  MOVWF  FAD
+0410:  CLRF   1D
+0412:  CLRF   1C
+0414:  CLRF   1B
+0416:  MOVLW  0A
+0418:  MOVWF  1A
+041A:  MOVFF  19,21
+041E:  MOVFF  18,20
+0422:  MOVFF  17,1F
+0426:  MOVFF  16,1E
+042A:  RCALL  00C0
+042C:  MOVLW  08
+042E:  ADDWF  00,W
+0430:  MOVWF  16
+0432:  MOVLW  00
+0434:  ADDWFC 01,W
+0436:  MOVWF  17
+0438:  MOVLW  00
+043A:  ADDWFC 02,W
+043C:  MOVWF  18
+043E:  MOVLW  00
+0440:  ADDWFC 03,W
+0442:  MOVWF  19
+.................... if(ligne4){printf("0");n=10*n;} 
+0444:  BSF    F93.7
+0446:  BTFSS  F81.7
+0448:  BRA    047E
+044A:  MOVLW  30
+044C:  BTFSS  F9E.4
+044E:  BRA    044C
+0450:  MOVWF  FAD
+0452:  CLRF   1D
+0454:  CLRF   1C
+0456:  CLRF   1B
+0458:  MOVLW  0A
+045A:  MOVWF  1A
+045C:  MOVFF  19,21
+0460:  MOVFF  18,20
+0464:  MOVFF  17,1F
+0468:  MOVFF  16,1E
+046C:  RCALL  00C0
+046E:  MOVFF  03,19
+0472:  MOVFF  02,18
+0476:  MOVFF  01,17
+047A:  MOVFF  00,16
+....................  
+.................... coldroite; 
+047E:  CLRF   F95
+0480:  MOVLW  04
+0482:  MOVWF  F8C
+.................... if(ligne1){printf("3");n=10*n+3;} 
+0484:  BSF    F93.4
+0486:  BTFSS  F81.4
+0488:  BRA    04C6
+048A:  MOVLW  33
+048C:  BTFSS  F9E.4
+048E:  BRA    048C
+0490:  MOVWF  FAD
+0492:  CLRF   1D
+0494:  CLRF   1C
+0496:  CLRF   1B
+0498:  MOVLW  0A
+049A:  MOVWF  1A
+049C:  MOVFF  19,21
+04A0:  MOVFF  18,20
+04A4:  MOVFF  17,1F
+04A8:  MOVFF  16,1E
+04AC:  RCALL  00C0
+04AE:  MOVLW  03
+04B0:  ADDWF  00,W
+04B2:  MOVWF  16
+04B4:  MOVLW  00
+04B6:  ADDWFC 01,W
+04B8:  MOVWF  17
+04BA:  MOVLW  00
+04BC:  ADDWFC 02,W
+04BE:  MOVWF  18
+04C0:  MOVLW  00
+04C2:  ADDWFC 03,W
+04C4:  MOVWF  19
+.................... if(ligne2){printf("6");n=10*n+6;} 
+04C6:  BSF    F93.5
+04C8:  BTFSS  F81.5
+04CA:  BRA    0508
+04CC:  MOVLW  36
+04CE:  BTFSS  F9E.4
+04D0:  BRA    04CE
+04D2:  MOVWF  FAD
+04D4:  CLRF   1D
+04D6:  CLRF   1C
+04D8:  CLRF   1B
+04DA:  MOVLW  0A
+04DC:  MOVWF  1A
+04DE:  MOVFF  19,21
+04E2:  MOVFF  18,20
+04E6:  MOVFF  17,1F
+04EA:  MOVFF  16,1E
+04EE:  RCALL  00C0
+04F0:  MOVLW  06
+04F2:  ADDWF  00,W
+04F4:  MOVWF  16
+04F6:  MOVLW  00
+04F8:  ADDWFC 01,W
+04FA:  MOVWF  17
+04FC:  MOVLW  00
+04FE:  ADDWFC 02,W
+0500:  MOVWF  18
+0502:  MOVLW  00
+0504:  ADDWFC 03,W
+0506:  MOVWF  19
+.................... if(ligne3){printf("9");n=10*n+9;} 
+0508:  BSF    F93.6
+050A:  BTFSS  F81.6
+050C:  BRA    054A
+050E:  MOVLW  39
+0510:  BTFSS  F9E.4
+0512:  BRA    0510
+0514:  MOVWF  FAD
+0516:  CLRF   1D
+0518:  CLRF   1C
+051A:  CLRF   1B
+051C:  MOVLW  0A
+051E:  MOVWF  1A
+0520:  MOVFF  19,21
+0524:  MOVFF  18,20
+0528:  MOVFF  17,1F
+052C:  MOVFF  16,1E
+0530:  RCALL  00C0
+0532:  MOVLW  09
+0534:  ADDWF  00,W
+0536:  MOVWF  16
+0538:  MOVLW  00
+053A:  ADDWFC 01,W
+053C:  MOVWF  17
+053E:  MOVLW  00
+0540:  ADDWFC 02,W
+0542:  MOVWF  18
+0544:  MOVLW  00
+0546:  ADDWFC 03,W
+0548:  MOVWF  19
+.................... if(ligne4){printf("\n\r[%lu] \n\r",n); 
+054A:  BSF    F93.7
+054C:  BTFSS  F81.7
+054E:  BRA    05AE
+0550:  MOVLW  0A
+0552:  BTFSS  F9E.4
+0554:  BRA    0552
+0556:  MOVWF  FAD
+0558:  MOVLW  0D
+055A:  BTFSS  F9E.4
+055C:  BRA    055A
+055E:  MOVWF  FAD
+0560:  MOVLW  5B
+0562:  BTFSS  F9E.4
+0564:  BRA    0562
+0566:  MOVWF  FAD
+0568:  MOVLW  41
+056A:  MOVWF  FE9
+056C:  MOVFF  19,1D
+0570:  MOVFF  18,1C
+0574:  MOVFF  17,1B
+0578:  MOVFF  16,1A
+057C:  BRA    018E
+057E:  MOVLW  C2
+0580:  MOVWF  FF6
+0582:  MOVLW  05
+0584:  MOVWF  FF7
+0586:  MOVLW  04
+0588:  MOVWF  1A
+058A:  BRA    023C
+....................     if(n==1664){open();} 
+058C:  MOVF   16,W
+058E:  SUBLW  80
+0590:  BNZ   05A4
+0592:  MOVF   17,W
+0594:  SUBLW  06
+0596:  BNZ   05A4
+0598:  MOVF   18,F
+059A:  BNZ   05A4
+059C:  MOVF   19,F
+059E:  BNZ   05A4
+05A0:  BRA    0280
+....................     else{incorrect();} 
+05A2:  BRA    05A6
+05A4:  BRA    028E
+....................      
+....................     n=0; 
+05A6:  CLRF   19
+05A8:  CLRF   18
+05AA:  CLRF   17
+05AC:  CLRF   16
+.................... } 
+....................  
+.................... output_d(7); 
+05AE:  CLRF   F95
+05B0:  MOVLW  07
+05B2:  MOVWF  F8C
+.................... enable_interrupts(INT_EXT); 
+05B4:  BSF    FF2.4
+.................... } 
+....................  
+....................  
+05B6:  BCF    FF2.1
+05B8:  GOTO   0054
+.................... void main() 
+.................... { 
+*
+05C8:  CLRF   FF8
+05CA:  BCF    FD0.7
+05CC:  BSF    07.7
+05CE:  CLRF   FEA
+05D0:  CLRF   FE9
+05D2:  MOVLW  81
+05D4:  MOVWF  FAF
+05D6:  MOVLW  A6
+05D8:  MOVWF  FAC
+05DA:  MOVLW  90
+05DC:  MOVWF  FAB
+05DE:  CLRF   19
+05E0:  CLRF   18
+05E2:  CLRF   17
+05E4:  CLRF   16
+05E6:  BSF    FC1.0
+05E8:  BSF    FC1.1
+05EA:  BSF    FC1.2
+05EC:  BCF    FC1.3
+....................  
+....................    setup_adc_ports(NO_ANALOGS); 
+05EE:  BSF    FC1.0
+05F0:  BSF    FC1.1
+05F2:  BSF    FC1.2
+05F4:  BCF    FC1.3
+....................    setup_adc(ADC_CLOCK_DIV_2); 
+05F6:  BCF    FC1.6
+05F8:  BCF    FC2.6
+05FA:  BCF    FC2.7
+05FC:  BCF    FC1.7
+05FE:  BSF    FC2.0
+....................    setup_psp(PSP_DISABLED); 
+0600:  BCF    F96.4
+....................    setup_spi(SPI_SS_DISABLED); 
+0602:  BCF    FC6.5
+0604:  BCF    F94.5
+0606:  BSF    F94.4
+0608:  BCF    F94.3
+060A:  MOVLW  01
+060C:  MOVWF  FC6
+060E:  MOVLW  00
+0610:  MOVWF  FC7
+....................    setup_wdt(WDT_OFF); 
+0612:  BCF    FD1.0
+....................    setup_timer_0(RTCC_INTERNAL); 
+0614:  MOVLW  80
+0616:  MOVWF  FD5
+....................    setup_timer_1(T1_DISABLED); 
+0618:  CLRF   FCD
+....................    setup_timer_2(T2_DISABLED,0,1); 
+061A:  MOVLW  00
+061C:  MOVWF  FCA
+061E:  MOVLW  00
+0620:  MOVWF  FCB
+....................    enable_interrupts(INT_EXT); 
+0622:  BSF    FF2.4
+....................    enable_interrupts(GLOBAL); 
+0624:  MOVLW  C0
+0626:  IORWF  FF2,F
+.................... //Setup_Oscillator parameter not selected from Intr Oscillator Config tab 
+....................  
+....................    // TODO: USER CODE!! 
+....................    output_d(7); 
+0628:  CLRF   F95
+062A:  MOVLW  07
+062C:  MOVWF  F8C
+....................    while (true) 
+....................    { 
+....................       
+....................    } 
+062E:  BRA    062E
+....................     
+....................  
+.................... } 
+0630:  SLEEP 
+
+Configuration Fuses:
+   Word  1: 2200   HS NOOSCSEN
+   Word  2: 0E0D   NOBROWNOUT WDT128 NOWDT BORV20 NOPUT
+   Word  3: 0100   CCP2C1
+   Word  4: 0081   STVREN NODEBUG NOLVP
+   Word  5: C00F   NOPROTECT NOCPD NOCPB
+   Word  6: E00F   NOWRT NOWRTD NOWRTB NOWRTC
+   Word  7: 400F   NOEBTR NOEBTRB

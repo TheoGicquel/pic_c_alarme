@@ -1,0 +1,65 @@
+
+ROM used: 2510 (8%)
+          2510 (8%) including unused fragments
+
+          4 Average locations per line
+          13 Average locations per statement
+
+RAM used: 60 (4%) at main() level
+          90 (6%) worst case
+
+Stack used: 5 worst case (out of 31 total available)
+
+Lines Stmts  %   Files
+----- ----- ---  -----
+  260   187 100  centrale_alarme_0.c
+   27     0   0  centrale_alarme_0.h
+  354     0   0  ..\..\..\..\..\..\..\..\..\Program Files (x86)\PICC\devices\18F452.h
+----- -----
+  641   187 Total
+
+Page ROM  %  RAM   Vol Diff  Functions:
+---- --- --- ---   --- ----  ----------
+0    200   4   0   492  4.6  TIMER1_isr
+0      6   0   0  1750  3.4  @const101
+0     34   1   2             @PSTRINGC_9600_31766_31767
+0    736  15   4  1750  3.4  EXT_isr
+0     84   2  14             @MUL3232
+0    518  10   4   715  4.8  inputRead
+0      8   0   0    18  1.0  ARM
+0     26   1   0    35  1.1  reset
+0     16   0   0    53  1.9  @const119
+0     66   1   1    53  1.9  changeArm
+0     30   1   0             @const120
+0     34   1   3             @PSTRINGCN_9600_31766_31767
+0    122   2  13    25  1.0  @DIV3232
+0    174   3  12    25  1.0  @PRINTF_L32U_9600_31766_31767
+0     14   0   1    25  1.0  changeDisarm
+0     36   1   0     9  0.7  @const128
+0      4   0   1     9  0.7  changeDelay
+0      4   0   1     9  0.7  changeTempor
+0      4   0   1     9  0.7  changeDeclench
+0      4   0   1     9  0.7  changeRearm
+0    232   5   0   529  4.3  MAIN
+
+Program metrics:
+    Functions               17
+    Statements              187
+    Comments                150
+    Volume (V)              8034
+    Difficilty (D)          36.6
+    Effort to implement (E) 293790
+    Time to implement (T)   4 hours, 32 minutes
+    Est Delivered Bugs (B)  1
+    Cyclomatic Complexity   39
+    Maintainability (MI)    50
+
+ Segment     Used  Free
+-----------  ----  ----
+00000-00002     4  0  
+00004-00006     4  0  
+00008-000A0   154  0  
+000A2-07FFE  2348  30258  
+
+
+
