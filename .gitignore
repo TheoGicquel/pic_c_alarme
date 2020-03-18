@@ -62,3 +62,11 @@ dkms.conf
 .sdf
 .lst
 .hex
+.sta
+.sym
+.tre
+.esym
+.bak
+.err
+.cof
+.SDF
