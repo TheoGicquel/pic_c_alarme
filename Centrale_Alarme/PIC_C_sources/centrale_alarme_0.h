@@ -3,7 +3,7 @@
 
 #FUSES NOWDT                 	//No Watch Dog Timer
 #FUSES WDT128                	//Watch Dog Timer uses 1:128 Postscale
-#FUSES RC_IO                 	//Resistor/Capacitor Osc
+#FUSES HS                    	//High speed Osc (> 4mhz for PCM/PCH) (>10mhz for PCD)
 #FUSES NOPROTECT             	//Code not protected from reading
 #FUSES NOOSCSEN              	//Oscillator switching is disabled, main oscillator is source
 #FUSES NOBROWNOUT            	//No brownout reset

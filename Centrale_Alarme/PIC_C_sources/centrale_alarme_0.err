@@ -1,4 +1,7 @@
->>> Warning 225 "centrale_alarme_0.c" Line 4(16,18): Duplicate #define
->>> Warning 225 "centrale_alarme_0.c" Line 5(17,19): Duplicate #define
-      Memory usage:   ROM=8%      RAM=4% - 6%
-      0 Errors,  2 Warnings.
+>>> Warning 202 "centrale_alarme_0.c" Line 24(7,12): Variable never used:   input
+>>> Warning 202 "centrale_alarme_0.c" Line 25(6,9): Variable never used:   dix
+>>> Warning 202 "centrale_alarme_0.c" Line 25(12,15): Variable never used:   sec
+>>> Warning 202 "centrale_alarme_0.c" Line 25(18,21): Variable never used:   min
+>>> Warning 202 "centrale_alarme_0.c" Line 26(17,19): Variable never used:   T3
+      Memory usage:   ROM=1%      RAM=2% - 3%
+      0 Errors,  5 Warnings.
