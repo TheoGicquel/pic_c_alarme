@@ -1,4 +1,4 @@
-#include "C:\Users\33695\Documents\git\software-semester2\architecture\TP\Centrale_Alarme\PIC_C_sources\centrale_alarme_0.h"
+#include "C:\Users\33695\Documents\git\pic_c_alarme\Centrale_Alarme\PIC_C_sources\centrale_alarme_0.h"
 // data type
    #define bool int
    #define true 1
@@ -65,16 +65,17 @@
 #define buzzer_off output_low(pin_a0)
 
 // Memory
-int32 input=0;
-int8 dix=0,sec=0,min=0; // time units
-int16 T1=0,T2=0,T3=0; // timers
-
+int input=0;
+int dix=0,sec=55,min=1; // time units
+int T1=0,T2=0,T3=0; // timers
+int timer,timerstart;
 /**--------------------------------INTERRUPTS-------------------------------**/  
 
 
 #int_TIMER1
 void  TIMER1_isr(void) //each .1 seconds
 {
+   /**
    set_timer1(3036);
    dix++;
    if(dix==10){sec++;dix=0;T1++;T2--;T3++;}
@@ -83,11 +84,31 @@ void  TIMER1_isr(void) //each .1 seconds
    if(timer_last_alarm!=0){timer_last_alarm--;}
    if(timer_activation!=0){timer_activation--;}
    if(timer_change_code!=0){timer_change_code--;}
+   **/
+
+   if(timerStart==1){
+      set_timer1(3036);
+      dix++;
+      if(dix>=10){
+         dix=0;
+         sec++;
+      }
+      
+      if(sec>=60){
+         sec=0;
+         min++;
+      }
+
+     // timer=timer%500; // overflow prevention
+   }
 }
 
 #int_EXT
 void  EXT_isr(void) 
 {
+
+ 
+
    // column 1
    c1h;c2l;c3l;
    if(l1){printf("1");input=10*input+1;}
@@ -111,6 +132,7 @@ void  EXT_isr(void)
    
    // reset columns
    c1h;c2h;c3h;
+   //enable_interrupts(INT_EXT);
 }
 
 /**--------------------------------FUNCTIONS---------------------------------**/  
@@ -215,15 +237,15 @@ void main()
    enable_interrupts(INT_TIMER1);
    enable_interrupts(INT_EXT);
    enable_interrupts(GLOBAL);
-//Setup_Oscillator parameter not selected from Intr Oscillator Config tab
    T1=100; // en sec
    T2=3600; // en sec
 
    c1h;c2h;c3h;
-   
+   int pass=0;
     while (true)
    {
-      if(timer_alarm==0){timer_alarm=20;}
+      
+   
      // printf("timer_alarm:%lu \n\r",timer_alarm);
       /**
       printf("timer_alarm:%lu last:%lu \n\r",timer_alarm,timer_last_alarm);
