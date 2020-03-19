@@ -58,15 +58,15 @@ dkms.conf
 
 # End of https://www.gitignore.io/api/c
 
-.doc#
-.sdf
-.lst
-.hex
-.sta
-.sym
-.tre
-.esym
-.bak
-.err
-.cof
-.SDF
+*.doc#
+*.sdf
+*.lst
+*.hex
+*.sta
+*.sym
+*.tre
+*.esym
+*.bak
+*.err
+*.cof
+*.SDF
