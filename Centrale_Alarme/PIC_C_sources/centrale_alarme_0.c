@@ -46,8 +46,23 @@
 
 /**-----------------------------------MODIFICATION PARAM---------------------**/
 
-void ARM(){alarm_active=1;output_high(pin_c0);printf("Alarme active dans 30 secondes \n\r");}
-void DISARM(){alarm_active=0;output_low(pin_c0);printf("Alarme stoppee \n\r");}
+void ARM()
+{
+   alarm_active=1;
+   output_high(pin_c0);
+   printf("Alarme active dans 30 secondes \n\r");
+   
+   while(timer_alert!=0 && alarm_active)
+   {
+      buzzer_on;
+      delay_ms(100);
+   }
+}
+
+void DISARM(){
+   alarm_active=0;
+   output_low(pin_c0);
+   printf("Alarme stoppee \n\r");}
 
 
 //raz reglages alarme
@@ -62,14 +77,14 @@ void changeRearm(int newRearm){nbrRearm=newRearm;printf("[NOUVEAU NBR MAX DESARM
 void keypadInputRead()
 {
    if(alarm_active==0){
-   if(keypadInput==990000){reset();} // RaZ
-   if(keypadInput>=1000 && keypadInput<1100){changeArm(keypadInput-1000);} // chg code arm
-   if(keypadInput==110000 && keypadInput<120000){changeDisarm(keypadInput-110000);} // chg code desarmement
-   if(keypadInput>=2000 && keypadInput<2100){changeDelay(keypadInput-2000);}// retard zone diff
-   if(keypadInput>=2100 && keypadInput<2200){changeTempor(keypadInput-2100);}//temporisation
-   if(keypadInput>=30000 && keypadInput<30180){changeDeclench(keypadInput-30000);} //duree declenc
-   if(keypadInput>=3100 && keypadInput<3200){changeRearm(keypadInput-30000);} //nbr rearm auto
-   if(keypadInput==codeArm){ARM();}
+      if(keypadInput==990000){reset();} // RaZ
+      if(keypadInput>=1000 && keypadInput<1100){changeArm(keypadInput-1000);} // chg code arm
+      if(keypadInput==110000 && keypadInput<120000){changeDisarm(keypadInput-110000);} // chg code desarmement
+      if(keypadInput>=2000 && keypadInput<2100){changeDelay(keypadInput-2000);}// retard zone diff
+      if(keypadInput>=2100 && keypadInput<2200){changeTempor(keypadInput-2100);}//temporisation
+      if(keypadInput>=30000 && keypadInput<30180){changeDeclench(keypadInput-30000);} //duree declenc
+      if(keypadInput>=3100 && keypadInput<3200){changeRearm(keypadInput-30000);} //nbr rearm auto
+      if(keypadInput==codeArm){ARM();}
    }else
    {
       if(keypadInput==codeDisarm){DISARM();}      
@@ -94,13 +109,13 @@ void beep(){
 void trigger_alert()
 {
    timer_alert = timeDeclench; //the alarm rings for Xs
-   timeRearm = timeDelay; //the alarm can't be trigered during the x next seconds
    while(timer_alert!=0 && alarm_active)
    {
       buzzer_on;
       delay_ms(100);
    }
    buzzer_off;
+   timer_alert = timeDelay; //the alarm can't be trigered during the x next seconds
 
    
 
@@ -209,7 +224,7 @@ void main()
 while (1)
    {      
       if(alarm_active){
-         if(detect_im() && !timeRearm)
+         if(detect_im() && !timeRearm && !timeDelay)
          {
             printf("Intrusion detectee");
             trigger_alert();
