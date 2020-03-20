@@ -34,29 +34,38 @@
    int32 timeRearm=0;//delai avant rearmement une fois duree maximum ecoulee
    int32 nbrRearm;//Nombre de rearmements automatiques autorises après un declenchement 
    int32 timer_alert = 0;
-   //int32 timer_activation = 0;
-   //int32 timer_change_code = 0;
+
+
    int16 dix=0,sec=0;//min=0; // time units
-   //int16 T1=0,T2=0,T3=0; // timers
-   //int16 timer,enableTimer;
+  
 //other
    int alarm_active = 0;
 
-/**--------------------------------FUNCTIONS---------------------------------**/  
-
+/**--------------------------------FUNCTIONS---------------------------------**/
+// prototypages indispensables  
+void beep(); int detect_im(); int detect_ret();
 /**-----------------------------------MODIFICATION PARAM---------------------**/
 
 void ARM()
-{
+{  int defaultBoucle=0; 
    alarm_active=1;
    output_high(pin_c0);
-   printf("Alarme active dans 30 secondes \n\r");
-   
+   printf("Alarme active dans %lu secondes \n\r",timeDelay);
+   timer_alert=timeDelay;
    while(timer_alert!=0 && alarm_active)
    {
-      buzzer_on;
-      delay_ms(100);
+      printf("%lu \n\r",timer_alert);
+      if(detect_im()){
+         if(!defaultBoucle){printf("Defaut de boucle \n\r");defaultBoucle=1;}
+         buzzer_on;
+      }
+      else
+      {
+         beep();
+      }
+      
    }
+   buzzer_off;
 }
 
 void DISARM(){
@@ -99,28 +108,33 @@ void keypadInputRead()
 /**-----------------------------------SONNERIES-----------------------------**/
 
 void beep(){
-   buzzer_on;
+
+  buzzer_on;
    delay_ms(200);
    buzzer_off;
    delay_ms(800);
+
 }
 
 
 void trigger_alert()
 {
+
+   printf("Intrusion detectee");
+   
    timer_alert = timeDeclench; //the alarm rings for Xs
    while(timer_alert!=0 && alarm_active)
    {
       buzzer_on;
-      delay_ms(100);
+      printf("%lu \r\n",timer_alert);
+      
    }
    buzzer_off;
-   timer_alert = timeDelay; //the alarm can't be trigered during the x next seconds
+   timer_alert = timeRearm; //the alarm can't be trigered during the x next seconds
 
    
 
 }
-
 
 void trigger_tempo()
 {
@@ -135,19 +149,23 @@ void trigger_tempo()
 /**-----------------------------------DETECTEURS-----------------------------**/
 
 int detect_im(){
+
    int result=0;
    if (c_im1){result=1;output_high(pin_c1);}else{output_low(pin_c1);}
    if (c_im2){result=1;output_high(pin_c2);}else{output_low(pin_c2);}
    if (c_im3){result=1;output_high(pin_c5);}else{output_low(pin_c5);}
    if (c_im4){result=1;output_high(pin_c4);}else{output_low(pin_c4);}
    return result;
+
 }
 
 int detect_ret(){
+
    int result=0;
    if (c_ret1){result=1;output_high(pin_e0);}else{output_low(pin_e0);}
    if (c_ret2){result=1;output_high(pin_e1);}else{output_low(pin_e1);}
    return result;
+
 }
 
 
@@ -220,13 +238,20 @@ void main()
 
    c1h;c2h;c3h;
 
+   // debug area
+   timeDelay=5;
+   timeTempo=3;
+   timeDeclench=10;
+
+
+
    
-while (1)
+while (true)
    {      
       if(alarm_active){
          if(detect_im() && !timeRearm && !timeDelay)
          {
-            printf("Intrusion detectee");
+            
             trigger_alert();
          }
 
@@ -235,7 +260,7 @@ while (1)
             if(!timeRearm) //alarm is active
             {
                trigger_tempo();
-               trigger_alert();///A CHANGER POUR TEST
+               trigger_alert();
             }
          }
       }
