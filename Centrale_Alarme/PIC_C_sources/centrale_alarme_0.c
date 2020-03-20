@@ -34,54 +34,27 @@
    int32 timeRearm=0;//delai avant rearmement une fois duree maximum ecoulee
    int32 nbrRearm;//Nombre de rearmements automatiques autorises après un declenchement 
    int32 timer_alert = 0;
-
+   int16 timer_beep=0;
+   int16 defaultBoucle=0; 
+   int16 ARM_ON=0;
 
    int16 dix=0,sec=0;//min=0; // time units
-  
+  int intrusion=0;
 //other
    int alarm_active = 0;
 
 /**--------------------------------FUNCTIONS---------------------------------**/
 // prototypages indispensables  
-void beep(); int detect_im(); int detect_ret();
-/**-----------------------------------MODIFICATION PARAM---------------------**/
+void beep(); int detect_im(); int detect_ret();void keypadInputRead(); void DISARM(); void ARM();
+void changeArm(int);
+void changeDisarm(int);
+void changeDelay(int);
+void changeTempor(int);
+void changeDeclench(int);
+void changeRearm(int);
+void reset();
 
-void ARM()
-{  int defaultBoucle=0; 
-   alarm_active=1;
-   output_high(pin_c0);
-   printf("Alarme active dans %lu secondes \n\r",timeDelay);
-   timer_alert=timeDelay;
-   while(timer_alert!=0 && alarm_active)
-   {
-      printf("%lu \n\r",timer_alert);
-      if(detect_im()){
-         if(!defaultBoucle){printf("Defaut de boucle \n\r");defaultBoucle=1;}
-         buzzer_on;
-      }
-      else
-      {
-         beep();
-      }
-      
-   }
-   buzzer_off;
-}
-
-void DISARM(){
-   alarm_active=0;
-   output_low(pin_c0);
-   printf("Alarme stoppee \n\r");}
-
-
-//raz reglages alarme
-void reset(){printf("[ALARME REMISE A ZERO] \n\r");codeArm=33;codeDisarm=1664;timeDelay=30;timeTempo=20;timeDeclench=180;timeRearm=0;nbrRearm=2;}
-void changeArm(int newArm){codeArm=newArm;printf("[NOUVEAU CODE ARMEMENT: %lu ]\n\r",codeArm);}
-void changeDisarm(int newDisarm){codeDisarm=newDisarm;printf("[NOUVEAU CODE DESARMEMENT: %lu ]\n\r",codeDisarm);}
-void changeDelay(int newTimeDelay){timeDelay=newTimeDelay;printf("[NOUVEAU DELAI ZONE DIFFEREE: %lu ]\n\r",timeDelay);}
-void changeTempor(int newTempo){timeTempo=newTempo;printf("[NOUVEAU TEMPORIS DECLENCH: %lu ]\n\r",timeTempo);}
-void changeDeclench(int newDeclench){if(newDeclench<180){timeDeclench=newDeclench;}else{timeDeclench=180;} printf("[NOUVEAU TEMPS MAX DECLENCH: %lu ]\n\r",timeDeclench);}
-void changeRearm(int newRearm){nbrRearm=newRearm;printf("[NOUVEAU NBR MAX DESARMEMENT: %lu ]\n\r",nbrRearm);}
+/**--------------------------------INTERRUPTS-------------------------------**/  
 
 void keypadInputRead()
 {
@@ -105,81 +78,19 @@ void keypadInputRead()
 
 
 
-/**-----------------------------------SONNERIES-----------------------------**/
-
-void beep(){
-
-  buzzer_on;
-   delay_ms(200);
-   buzzer_off;
-   delay_ms(800);
-
-}
-
-
-void trigger_alert()
-{
-
-   printf("Intrusion detectee");
-   
-   timer_alert = timeDeclench; //the alarm rings for Xs
-   while(timer_alert!=0 && alarm_active)
-   {
-      buzzer_on;
-      printf("%lu \r\n",timer_alert);
-      
-   }
-   buzzer_off;
-   timer_alert = timeRearm; //the alarm can't be trigered during the x next seconds
-
-   
-
-}
-
-void trigger_tempo()
-{
-   timer_alert=timeTempo;
-   while (timer_alert!=0 && alarm_active)
-   {
-      beep();
-   }
-   
-}
-
-/**-----------------------------------DETECTEURS-----------------------------**/
-
-int detect_im(){
-
-   int result=0;
-   if (c_im1){result=1;output_high(pin_c1);}else{output_low(pin_c1);}
-   if (c_im2){result=1;output_high(pin_c2);}else{output_low(pin_c2);}
-   if (c_im3){result=1;output_high(pin_c5);}else{output_low(pin_c5);}
-   if (c_im4){result=1;output_high(pin_c4);}else{output_low(pin_c4);}
-   return result;
-
-}
-
-int detect_ret(){
-
-   int result=0;
-   if (c_ret1){result=1;output_high(pin_e0);}else{output_low(pin_e0);}
-   if (c_ret2){result=1;output_high(pin_e1);}else{output_low(pin_e1);}
-   return result;
-
-}
-
-
-/**--------------------------------INTERRUPTS-------------------------------**/  
 
 
 #int_TIMER1
 void  TIMER1_isr(void) //each .1 seconds
 {
-   disable_interrupts(INT_TIMER1);
+   disable_interrupts(INT_EXT);disable_interrupts(INT_TIMER1);
 
-     
+      
+      printf("%lu",timer_alert);           
       set_timer1(3036);
       dix++;
+      if(timer_beep>0){timer_beep--;}
+
       if(dix>=10){
          dix=0;
          sec++;
@@ -187,7 +98,14 @@ void  TIMER1_isr(void) //each .1 seconds
          if (timeRearm>0 && !timer_alert){timeRearm--;}
       }
 
-  enable_interrupts(INT_TIMER1);
+
+   // printing area
+   if(intrusion){printf("Intrusion detectee");}
+   if(defaultBoucle==1){defaultBoucle=2;printf("Defaut de boucle \n\r");}
+
+
+
+   enable_interrupts(INT_EXT);enable_interrupts(INT_TIMER1);
 }
 
 #int_EXT
@@ -218,6 +136,111 @@ void  EXT_isr(void)
 }
 
 
+
+
+
+
+
+
+
+
+/**-----------------------------------MODIFICATION PARAM---------------------**/
+
+void ARM()
+{  defaultBoucle=0; 
+   timer_alert=timeDelay;
+   output_high(pin_c0);
+   printf("Alarme active dans %lu secondes \n\r",timer_alert);
+   ARM_ON=1;
+}
+
+void DISARM(){
+   alarm_active=0;
+   output_low(pin_c0);
+   printf("Alarme stoppee \n\r");
+}
+
+
+//raz reglages alarme
+void reset(){printf("[ALARME REMISE A ZERO] \n\r");codeArm=33;codeDisarm=1664;timeDelay=30;timeTempo=20;timeDeclench=180;timeRearm=0;nbrRearm=2;}
+void changeArm(int newArm){codeArm=newArm;printf("[NOUVEAU CODE ARMEMENT: %lu ]\n\r",codeArm);}
+void changeDisarm(int newDisarm){codeDisarm=newDisarm;printf("[NOUVEAU CODE DESARMEMENT: %lu ]\n\r",codeDisarm);}
+void changeDelay(int newTimeDelay){timeDelay=newTimeDelay;printf("[NOUVEAU DELAI ZONE DIFFEREE: %lu ]\n\r",timeDelay);}
+void changeTempor(int newTempo){timeTempo=newTempo;printf("[NOUVEAU TEMPORIS DECLENCH: %lu ]\n\r",timeTempo);}
+void changeDeclench(int newDeclench){if(newDeclench<180){timeDeclench=newDeclench;}else{timeDeclench=180;} printf("[NOUVEAU TEMPS MAX DECLENCH: %lu ]\n\r",timeDeclench);}
+void changeRearm(int newRearm){nbrRearm=newRearm;printf("[NOUVEAU NBR MAX DESARMEMENT: %lu ]\n\r",nbrRearm);}
+
+
+
+
+
+/**-----------------------------------SONNERIES-----------------------------**/
+
+void beep(){
+
+if(timer_beep>=8){
+  buzzer_on;
+}
+else
+{
+   buzzer_off;
+}
+buzzer_off;
+
+}
+
+
+void trigger_alert()
+{
+   timer_alert = timeDeclench; //the alarm rings for Xs
+   intrusion=1;
+
+   while(timer_alert!=0 && alarm_active)
+   {
+      buzzer_on;
+      intrusion=0;
+   }
+   buzzer_off;
+   timer_alert = timeRearm; //the alarm can't be trigered during the x next seconds
+
+   
+
+}
+
+void trigger_tempo()
+{
+   timer_alert=timeTempo;
+   while (timer_alert!=0 && alarm_active)
+   {
+      beep();
+   }
+   
+}
+
+/**-----------------------------------DETECTEURS-----------------------------**/
+// si capteur immediat active
+int detect_im(){
+   disable_interrupts(INT_EXT);disable_interrupts(INT_TIMER1);
+   int result=0;
+   if (c_im1){result=1;output_high(pin_c1);}else{output_low(pin_c1);}
+   if (c_im2){result=1;output_high(pin_c2);}else{output_low(pin_c2);}
+   if (c_im3){result=1;output_high(pin_c5);}else{output_low(pin_c5);}
+   if (c_im4){result=1;output_high(pin_c4);}else{output_low(pin_c4);}
+   enable_interrupts(INT_EXT);enable_interrupts(INT_TIMER1);
+   return result;
+}
+// si capteur differre active
+int detect_ret(){
+   disable_interrupts(INT_EXT);disable_interrupts(INT_TIMER1);
+   int result=0;
+   if (c_ret1){result=1;output_high(pin_e0);}else{output_low(pin_e0);}
+   if (c_ret2){result=1;output_high(pin_e1);}else{output_low(pin_e1);}
+      enable_interrupts(INT_EXT);enable_interrupts(INT_TIMER1);
+   return result;
+}
+
+
+
 /**-----------------------------------MAIN-----------------------------------**/  
 void main()
 {
@@ -233,22 +256,45 @@ void main()
    enable_interrupts(INT_TIMER1);
    enable_interrupts(INT_EXT);
    enable_interrupts(GLOBAL);
-  // T1=100; // en sec
-   //T2=3600; // en sec
-
    c1h;c2h;c3h;
 
    // debug area
    timeDelay=5;
    timeTempo=3;
    timeDeclench=10;
-
-
-
    
 while (true)
-   {      
+   {
+
+      if(ARM_ON)
+      {
+         if(timer_alert!=0)
+         {  
+         if(detect_im()){
+            if(defaultBoucle==0){defaultBoucle=1;}
+            buzzer_on;
+         }
+         else
+         {
+            beep();
+         }
+
+         if(timer_alert==0 && defaultBoucle==0){
+            printf("armee! \n\r");
+            alarm_active=1;
+            ARM_ON=0;
+            buzzer_off;
+         }
+      
+      }
+
+         
+      }
+
       if(alarm_active){
+
+      
+
          if(detect_im() && !timeRearm && !timeDelay)
          {
             
@@ -259,8 +305,8 @@ while (true)
          {
             if(!timeRearm) //alarm is active
             {
-               trigger_tempo();
-               trigger_alert();
+               //trigger_tempo();
+               //trigger_alert();
             }
          }
       }
