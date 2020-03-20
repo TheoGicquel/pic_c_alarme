@@ -1,4 +1,8 @@
 #include "C:\Users\33695\Documents\git\pic_c_alarme\Centrale_Alarme\PIC_C_sources\centrale_alarme_0.h"
+/*******************************************************************************
+ *      Thibaud MACRET    -   Theo GICQUEL     )      GROUPE F
+ ******************************************************************************/
+
 // numpad config
    // columns
    int32 KeypadInput=0;
@@ -37,6 +41,9 @@
    int16 timer_beep=0;
    int16 defaultBoucle=0; 
    int16 ARM_ON=0;
+   int16 ALERT_ON=0;
+   int16 TEMPO_ON=0;
+   
 
    int16 dix=0,sec=0;//min=0; // time units
   int intrusion=0;
@@ -86,7 +93,7 @@ void  TIMER1_isr(void) //each .1 seconds
    disable_interrupts(INT_EXT);disable_interrupts(INT_TIMER1);
 
       
-      printf("%lu",timer_alert);           
+               
       set_timer1(3036);
       dix++;
       if(timer_beep>0){timer_beep--;}
@@ -136,14 +143,6 @@ void  EXT_isr(void)
 }
 
 
-
-
-
-
-
-
-
-
 /**-----------------------------------MODIFICATION PARAM---------------------**/
 
 void ARM()
@@ -155,6 +154,7 @@ void ARM()
 }
 
 void DISARM(){
+   defaultBoucle=0;
    alarm_active=0;
    output_low(pin_c0);
    printf("Alarme stoppee \n\r");
@@ -177,45 +177,13 @@ void changeRearm(int newRearm){nbrRearm=newRearm;printf("[NOUVEAU NBR MAX DESARM
 /**-----------------------------------SONNERIES-----------------------------**/
 
 void beep(){
-
-if(timer_beep>=8){
-  buzzer_on;
-}
-else
-{
+   buzzer_on;
+   delay_ms(200);
    buzzer_off;
-}
-buzzer_off;
-
+   delay_ms(800);
 }
 
 
-void trigger_alert()
-{
-   timer_alert = timeDeclench; //the alarm rings for Xs
-   intrusion=1;
-
-   while(timer_alert!=0 && alarm_active)
-   {
-      buzzer_on;
-      intrusion=0;
-   }
-   buzzer_off;
-   timer_alert = timeRearm; //the alarm can't be trigered during the x next seconds
-
-   
-
-}
-
-void trigger_tempo()
-{
-   timer_alert=timeTempo;
-   while (timer_alert!=0 && alarm_active)
-   {
-      beep();
-   }
-   
-}
 
 /**-----------------------------------DETECTEURS-----------------------------**/
 // si capteur immediat active
@@ -270,45 +238,65 @@ while (true)
       {
          if(timer_alert!=0)
          {  
-         if(detect_im()){
-            if(defaultBoucle==0){defaultBoucle=1;}
-            buzzer_on;
-         }
-         else
-         {
-            beep();
-         }
-
-         if(timer_alert==0 && defaultBoucle==0){
-            printf("armee! \n\r");
-            alarm_active=1;
-            ARM_ON=0;
-            buzzer_off;
-         }
-      
-      }
-
-         
-      }
-
-      if(alarm_active){
-
-      
-
-         if(detect_im() && !timeRearm && !timeDelay)
-         {
-            
-            trigger_alert();
-         }
-
-         if(detect_ret())
-         {
-            if(!timeRearm) //alarm is active
+            if(detect_im()){
+               if(defaultBoucle==0){defaultBoucle=1;}
+               buzzer_on;
+            }
+            else
             {
-               //trigger_tempo();
-               //trigger_alert();
+               beep();
+            }
+
+            if(timer_alert==0 && defaultBoucle==0){
+            
+               alarm_active=1;
+
+               ARM_ON=0;
+               buzzer_off;
             }
          }
       }
+
+      if(alarm_active)
+      {
+
+         if(detect_im() && !timeRearm && !timeDelay)
+         {
+            if(ALERT_ON==0){
+            timer_alert = timeDeclench; //the alarm rings for Xs
+            intrusion=1;
+            ALERT_ON=1;  
+            }
+         }
+      
+         if(ALERT_ON && timer_alert!=0)
+         {
+            buzzer_on;
+         }
+         if(ALERT_ON && timer_alert==0){
+            buzzer_off;
+            timer_alert=timeRearm;
+         }
+
+
+         if(detect_ret())
+         {
+            if(TEMPO_ON==0) //alarm is active
+            {
+               timer_alert=timeTempo;
+               TEMPO_ON;
+            }
+
+            if(TEMPO_ON==1 && timer_alert!=0){
+             beep();
+            }
+
+            if (TEMPO_ON==1 && timer_alert==0)
+            {
+               alarm_active=1;
+            }   
+         }
+      }
+      
    }
 }
