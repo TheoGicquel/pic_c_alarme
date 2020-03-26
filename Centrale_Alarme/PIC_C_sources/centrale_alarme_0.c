@@ -260,7 +260,7 @@ while (true)
       if(alarm_active)
       {
 
-         if(detect_im() && timeRearm==0 && timeDelay==0)
+         if(detect_im() && !timeRearm && !timeDelay)
          {
             if(ALERT_ON==0){
             timer_alert = timeDeclench; //the alarm rings for Xs
@@ -276,7 +276,6 @@ while (true)
          if(ALERT_ON && timer_alert==0){
             buzzer_off;
             timer_alert=timeRearm;
-            ALERT_ON=0;
          }
 
 
@@ -285,7 +284,7 @@ while (true)
             if(TEMPO_ON==0) //alarm is active
             {
                timer_alert=timeTempo;
-               TEMPO_ON=1;
+               TEMPO_ON;
             }
 
             if(TEMPO_ON==1 && timer_alert!=0){
