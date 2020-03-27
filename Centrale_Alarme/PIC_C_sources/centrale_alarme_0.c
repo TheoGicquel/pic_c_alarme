@@ -155,7 +155,14 @@ void DISARM(){
    ARM_ON=0;
    defaultBoucle=0;
    alarm_active=0;
+   // precautions
    output_low(pin_c0);
+   output_low(pin_c1);
+   output_low(pin_c2);
+   output_low(pin_c5);
+   output_low(pin_c4);
+   buzzer_off;
+   
    printf("Alarme stoppee \n\r");
 }
 
