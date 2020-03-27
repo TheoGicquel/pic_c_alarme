@@ -1,7 +1,12 @@
 #include "C:\Users\33695\Documents\git\pic_c_alarme\Centrale_Alarme\PIC_C_sources\centrale_alarme_0.h"
 /*******************************************************************************
- *      Thibaud MACRET    -   Theo GICQUEL     )      GROUPE F
- ******************************************************************************/
+ *      Thibaud MACRET    -   Theo GICQUEL     ;      GROUPE F                 *
+ *******************************************************************************
+                              LISTE DE BUGS :
+//FIXME le Defaut de boucle empeche le desarmement
+//FIXME defaut de boucle devrait pouvoir interrompre et reprendre la sequence de rearmement
+
+*******************************************************************************/
 
 // numpad config
    // columns
@@ -65,7 +70,7 @@ void reset();
 
 void keypadInputRead()
 {
-   if(alarm_active==0){
+   if(alarm_active==0){// alarme desactivee pour pouvoir modifier parametres
       if(keypadInput==990000){reset();} // RaZ
       if(keypadInput>=1000 && keypadInput<1100){changeArm(keypadInput-1000);} // chg code arm
       if(keypadInput==110000 && keypadInput<120000){changeDisarm(keypadInput-110000);} // chg code desarmement
@@ -79,38 +84,27 @@ void keypadInputRead()
       if(keypadInput==codeDisarm){DISARM();}      
    }
    
-   keypadInput=0;
+   keypadInput=0;// reset apres lecture
 }
-
-
-
-
-
 
 #int_TIMER1
 void  TIMER1_isr(void) //each .1 seconds
 {
    disable_interrupts(INT_EXT);disable_interrupts(INT_TIMER1);
+   set_timer1(3036);
+   dix++;
+   if(timer_beep>0){timer_beep--;}
 
-      
-               
-      set_timer1(3036);
-      dix++;
-      if(timer_beep>0){timer_beep--;}
-
-      if(dix>=10){
-         dix=0;
-         sec++;
-         if (timer_alert>0){timer_alert--;}
-         if (timeRearm>0 && !timer_alert){timeRearm--;}
-      }
-
+   if(dix>=10){
+      dix=0;
+      sec++;
+      if (timer_alert>0){timer_alert--;}
+      if (timeRearm>0 && !timer_alert){timeRearm--;}
+   }
 
    // printing area
-   if(intrusion){printf("Intrusion detectee");}
+   if(intrusion){printf("Intrusion detectee \n\r");}
    if(defaultBoucle==1){defaultBoucle=2;printf("Defaut de boucle \n\r");}
-
-
 
    enable_interrupts(INT_EXT);enable_interrupts(INT_TIMER1);
 }
@@ -146,14 +140,19 @@ void  EXT_isr(void)
 /**-----------------------------------MODIFICATION PARAM---------------------**/
 
 void ARM()
-{  defaultBoucle=0; 
-   timer_alert=timeDelay;
-   output_high(pin_c0);
-   printf("Alarme active dans %lu secondes \n\r",timer_alert);
-   ARM_ON=1;
+{  
+   if(ARM_ON==0)// permet de ne pas declencher 2x la sequence d'armement
+   {
+      defaultBoucle=0; 
+      timer_alert=timeDelay;
+      output_high(pin_c0);
+      printf("Alarme active dans %lu secondes \n\r",timer_alert);
+      ARM_ON=1; 
+   }
 }
 
 void DISARM(){
+   ARM_ON=0;
    defaultBoucle=0;
    alarm_active=0;
    output_low(pin_c0);
@@ -170,10 +169,6 @@ void changeTempor(int newTempo){timeTempo=newTempo;printf("[NOUVEAU TEMPORIS DEC
 void changeDeclench(int newDeclench){if(newDeclench<180){timeDeclench=newDeclench;}else{timeDeclench=180;} printf("[NOUVEAU TEMPS MAX DECLENCH: %lu ]\n\r",timeDeclench);}
 void changeRearm(int newRearm){nbrRearm=newRearm;printf("[NOUVEAU NBR MAX DESARMEMENT: %lu ]\n\r",nbrRearm);}
 
-
-
-
-
 /**-----------------------------------SONNERIES-----------------------------**/
 
 void beep(){
@@ -182,8 +177,6 @@ void beep(){
    buzzer_off;
    delay_ms(800);
 }
-
-
 
 /**-----------------------------------DETECTEURS-----------------------------**/
 // si capteur immediat active
@@ -203,7 +196,7 @@ int detect_ret(){
    int result=0;
    if (c_ret1){result=1;output_high(pin_e0);}else{output_low(pin_e0);}
    if (c_ret2){result=1;output_high(pin_e1);}else{output_low(pin_e1);}
-      enable_interrupts(INT_EXT);enable_interrupts(INT_TIMER1);
+   enable_interrupts(INT_EXT);enable_interrupts(INT_TIMER1);
    return result;
 }
 
@@ -227,31 +220,31 @@ void main()
    c1h;c2h;c3h;
 
    // debug area
-   timeDelay=5;
-   timeTempo=3;
+   timeDelay=10;
+   timeTempo=10;
    timeDeclench=10;
    
 while (true)
    {
-
-      if(ARM_ON)
+      if(ARM_ON==1)// sequence armement
       {
          if(timer_alert!=0)
          {  
-            if(detect_im()){
-               if(defaultBoucle==0){defaultBoucle=1;}
+            if(detect_im()){// detection d'un defaut de boucle immediat
+               if(defaultBoucle==0){defaultBoucle=1;}// affiche 1x message defaultBoucle
+               timer_alert=timeDelay; // conservation du delai avant armement
                buzzer_on;
             }
-            else
+            if(detect_im()==0)// pas de defaut de boucle
             {
+               buzzer_off;
                beep();
             }
 
-            if(timer_alert==0 && defaultBoucle==0){
-            
+            if(timer_alert==0 && defaultBoucle==0)// finalisation sequence armement 
+            {
                alarm_active=1;
-
-               ARM_ON=0;
+              // ARM_ON=2;// empeche reiteration sequence armement
                buzzer_off;
             }
          }
@@ -260,7 +253,7 @@ while (true)
       if(alarm_active)
       {
 
-         if(detect_im() && !timeRearm && !timeDelay)
+         if(detect_im() && timeRearm==0 && timeDelay==0)
          {
             if(ALERT_ON==0){
             timer_alert = timeDeclench; //the alarm rings for Xs
@@ -273,7 +266,9 @@ while (true)
          {
             buzzer_on;
          }
-         if(ALERT_ON && timer_alert==0){
+
+         if(ALERT_ON && timer_alert==0)
+         {
             buzzer_off;
             timer_alert=timeRearm;
          }
@@ -281,22 +276,29 @@ while (true)
 
          if(detect_ret())
          {
-            if(TEMPO_ON==0) //alarm is active
+            if(!TEMPO_ON && !intrusion)//temporisation active 1x
             {
                timer_alert=timeTempo;
-               TEMPO_ON;
+               TEMPO_ON=1;
+               
             }
 
-            if(TEMPO_ON==1 && timer_alert!=0){
-             beep();
+            if(TEMPO_ON==1 && timer_alert!=0)// decompte temporisation
+            {
+               beep();
             }
 
-            if (TEMPO_ON==1 && timer_alert==0)
+            if (TEMPO_ON==1 && timer_alert==0)// activation des capteurs immediat
             {
                alarm_active=1;
+               intrusion=1;
+               ALERT_ON=1;
             }   
          }
       }
       
    }
 }
+
+
+
